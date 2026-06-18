@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dinosaur Comics Therapy</title>
+  <meta name="description" content="Identify your emotions. The Maastrichtian emotional regulation protocol selects a curated Dinosaur Comic tailored to your selections." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+
+    <header class="masthead">
+      <div class="masthead-glyph" aria-hidden="true">⬡</div>
+      <div class="masthead-text">
+        <h1>Dinosaur Comics Therapy</h1>
+        <p class="masthead-sub">Maastrichtian emotional regulation protocol &mdash; Methodology v1.3</p>
+      </div>
+    </header>
+
+    <main id="screens">
+
+      <section id="screen-intake" class="screen is-active">
+        <p class="prompt">How are you feeling <span id="timeOfDay">today</span>?</p>
+        <p class="instruction">Identify the three emotions dominating your feelings. The methodology will select a curated Dinosaur Comic tailored to your selections.</p>
+
+        <div class="wheel-stage">
+          <svg id="wheel" class="wheel" role="group" aria-label="Emotion wheel — focus a wedge to hear its name, press Enter to select"></svg>
+          <div class="readout">
+            <span class="readout-value" id="focusReadoutValue">&mdash;</span>
+          </div>
+        </div>
+
+        <div class="selection-tray">
+          <span class="tray-label">Selected (<span id="selectedCount">0</span>/3)</span>
+          <div class="tray-pills" id="trayPills"></div>
+        </div>
+
+        <button id="alignButton" class="align-button" type="button" disabled>
+          Choose up to Three
+        </button>
+      </section>
+
+      <section id="screen-processing" class="screen">
+        <div class="processing-pills" id="processingPills"></div>
+        <p class="processing-label">Resolving emotional state&hellip;</p>
+        <pre class="seed-readout" id="seedReadout" aria-live="polite"></pre>
+      </section>
+
+      <section id="screen-reveal" class="screen">
+        <div class="reveal-tags" id="revealTags"></div>
+        <div class="comic-frame">
+          <img id="comicImage" alt="" />
+        </div>
+        <p class="reveal-caption">Your Dino Therapy is ready.</p>
+        <p class="comic-meta" id="comicMeta"></p>
+        <button id="resetButton" class="reset-button" type="button">New session</button>
+      </section>
+
+    </main>
+
+    <footer class="footnote">
+      The Maastrichtian emotional regulation protocol helps you identify your emotions and practice healthy emotional regulation with a selected <a href="https://www.qwantz.com" target="_blank" rel="noopener">Dinosaur Comic</a> by Ryan North.
+    </footer>
+
+  </div>
+
+  <script src="emotions-data.js"></script>
+  <script src="wheel.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
