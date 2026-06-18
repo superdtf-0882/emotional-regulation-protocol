@@ -197,7 +197,7 @@
     img.alt = data.comic.blurb || data.comic.title || `Dinosaur Comics #${data.comic.id}`;
 
     document.getElementById('comicMeta').innerHTML =
-      `Comic #${data.comic.id} of ${data.totalComics} on file · seed hash ${data.hash} · ` +
+      `Comic #${data.comic.id} of ${data.totalComics} on file · ` +
       `<a href="${data.comic.pageUrl}" target="_blank" rel="noopener">view on qwantz.com</a>`;
 
     showScreen('screen-reveal');
