@@ -1,71 +1,52 @@
-# Ontological Alignment Engine
+# Dinosaur Comics Therapy
 
 A Feelings Wheel that performs the full ritual of emotional precision, then
-deterministically hands you a Dinosaur Comic. Same emotions + same day =
-same comic, every time — which is the entire trick.
+deterministically hands you a Dinosaur Comic. Select up to three emotions,
+let the Maastrichtian emotional regulation protocol do its work, and receive
+your curated comic. Same emotions + same day = same comic, every time.
+
+**Live site:** https://emotional-regulation-protocol.vercel.app/
 
 ## How it works
 
-1. **Frontend** (`public/`) — a plain HTML/CSS/JS sunburst wheel. No
-   build step, no framework. Selecting 1–3 granular emotions and clicking
-   "Establish Ontological Alignment" sends them to `/api/comic`.
+1. **Frontend** (`public/`) — a plain HTML/CSS/JS sunburst wheel with three
+   selectable rings. No build step, no framework. Selecting 1–3 emotions and
+   clicking "Get Dino Therapy" sends them to `/api/comic`.
 2. **Resolution logic** (`lib/resolveComic.js`) — alphabetizes the chosen
-   emotions, appends today's date, hashes the string, and uses modulo
+   emotions, appends today's date, hashes the string (djb2), and uses modulo
    against the current Dinosaur Comics archive size to pick a comic ID.
    It looks up the *current* archive size live from qwantz.com's homepage
-   each time (cached 1 hour), so it never goes stale — no number to
-   manually update.
+   each time (cached 1 hour), so it never goes stale.
 3. **Backend** — the same `lib/resolveComic.js` is used by two different
-   servers, so local dev and production behave identically:
-   - `server.js` — a small Express server, for local testing in Claude Code.
+   servers so local dev and production behave identically:
+   - `server.js` — a small Express server, for local development.
    - `api/comic.js` — a Vercel serverless function, for production.
 
-## Why Vercel and not GitHub Pages
-
-GitHub Pages is static-only and can't run the server-side step that scrapes
-qwantz.com (a browser can't fetch another site's HTML directly — that's a
-CORS wall, not just a qwantz quirk). Vercel's free tier serves the static
-frontend *and* runs the `/api` function in one deployment, so it's the
-simplest single-service option here. Render or Railway would also work if
-you'd rather consolidate hosting there later.
-
-## Local development (Claude Code / Git Bash)
+## Local development
 
 ```bash
 npm install
 npm start
 ```
 
-Then open `http://localhost:3000`. Click through a full session — select
-emotions, click the alignment button, confirm a comic image actually loads.
-
-> **One thing to verify on your end:** this sandbox's network egress is
-> locked to a small allowlist of dev domains and doesn't include
-> qwantz.com, so I could exercise every code path *except* the live
-> scrape itself end-to-end. I fetched qwantz.com's real pages separately
-> to confirm the markup my regexes target (`og:image`, `comic=NNNN` links)
-> is correct as of today, and the request/response plumbing is tested —
-> but please run it locally once before treating it as demo-ready.
+Then open `http://localhost:3000`. Select emotions, click "Get Dino Therapy",
+and confirm a comic image loads.
 
 ## Deploying to Vercel
 
-```bash
-npm install -g vercel   # one-time
-vercel login
-vercel                  # deploys a preview
-vercel --prod           # promotes to your production URL
-```
+The repo is connected to Vercel for auto-deploys on push to `main`.
 
-Or connect the GitHub repo at vercel.com/new for auto-deploys on push.
-No environment variables are required.
+If setting up from scratch:
+- Connect the repo at vercel.com/new
+- Under **Settings → General → Framework Preset**, set to **Other**
+- No environment variables are required
 
 ## If qwantz.com ever changes its markup
 
 `fetchComicById()` in `lib/resolveComic.js` first tries the `og:image` meta
 tag, falling back to the `<img class="comic">` tag. `fetchLatestComicId()`
-just takes the highest `comic=NNNN` number found anywhere on the homepage.
-Both are deliberately loose rather than tied to exact tag structure, but
-if Ryan North redesigns the site, these are the two functions to revisit.
+takes the highest `comic=NNNN` number found anywhere on the homepage.
+If Ryan North redesigns the site, these are the two functions to revisit.
 
 ## Project structure
 
@@ -73,12 +54,17 @@ if Ryan North redesigns the site, these are the two functions to revisit.
 .
 ├── api/comic.js          # Vercel serverless function (production)
 ├── server.js             # Express server (local dev only)
-├── lib/resolveComic.js   # shared logic used by both of the above
+├── lib/resolveComic.js   # shared resolution logic
 ├── public/
 │   ├── index.html
 │   ├── styles.css
-│   ├── emotions-data.js  # the 3-tier emotion taxonomy
-│   ├── wheel.js           # SVG sunburst layout + rendering
-│   └── app.js             # state machine, API calls, animations
+│   ├── emotions-data.js  # 3-tier emotion taxonomy
+│   ├── wheel.js          # SVG sunburst layout + rendering
+│   └── app.js            # state, API calls, animations
 └── vercel.json
 ```
+
+## Attributions
+
+- Dinosaur Comics by [Ryan North](https://www.qwantz.com)
+- Feelings Wheel by [Geoffrey Roberts](https://feelingswheel.app/)
