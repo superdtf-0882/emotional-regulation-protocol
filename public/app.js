@@ -267,7 +267,7 @@
     const source = tier === 'upgraded' ? 'xkcd' : 'qwantz';
     document.getElementById('revealCaption').textContent =
       tier === 'upgraded'
-        ? 'Upgraded ontological alignment: established.'
+        ? 'Your Holocene Gödelian Therapy is ready.'
         : 'Your Dino Therapy is ready.';
     document.getElementById('comicMeta').innerHTML =
       `Comic #${data.comic.id} of ${data.totalComics} on file · ` +
