@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Protocol Outcomes — Dinosaur Comics Therapy</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .stats-grid {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin: 32px 0;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      padding: 14px 18px;
+      background: var(--white);
+      border: 1.5px solid var(--paper-deep);
+      border-radius: 6px;
+    }
+    .stat-row.separator {
+      background: none;
+      border: none;
+      border-top: 1px solid var(--paper-deep);
+      padding: 6px 0 0;
+      margin-top: 4px;
+      border-radius: 0;
+    }
+    .stat-label {
+      font-family: var(--font-body);
+      font-size: 15px;
+      color: var(--ink);
+    }
+    .stat-count {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--accent-clinical);
+      white-space: nowrap;
+    }
+    .stats-heading {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(18px, 3.5vw, 24px);
+      margin: 0 0 4px;
+    }
+    .stats-sub {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--ink-soft);
+      margin: 0 0 8px;
+    }
+    .back-link {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--accent-clinical);
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 32px;
+    }
+    .back-link:hover { text-decoration: underline; }
+    .loading-msg {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--ink-soft);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <header class="masthead">
+      <div class="masthead-glyph" aria-hidden="true">⬡</div>
+      <div class="masthead-text">
+        <h1>Dinosaur Comics Therapy</h1>
+        <p class="masthead-sub">Maastrichtian emotional regulation protocol &mdash; Methodology v1.3</p>
+      </div>
+    </header>
+
+    <a href="/" class="back-link">← Back to therapy</a>
+
+    <p class="stats-heading">Protocol Outcomes</p>
+    <p class="stats-sub">Running totals across all sessions</p>
+
+    <div class="stats-grid" id="statsGrid">
+      <p class="loading-msg">Loading&hellip;</p>
+    </div>
+
+    <footer class="footnote">
+      The Maastrichtian emotional regulation protocol helps you identify your emotions and practice healthy emotional regulation with a selected <a href="https://www.qwantz.com" target="_blank" rel="noopener">Dinosaur Comic</a> by Ryan North.
+      Feelings Wheel by <a href="https://feelingswheel.app/" target="_blank" rel="noopener">Geoffrey Roberts</a>.
+    </footer>
+
+  </div>
+
+  <script>
+    (async function () {
+      const grid = document.getElementById('statsGrid');
+      try {
+        const res = await fetch('/api/stats');
+        if (!res.ok) throw new Error(`Server returned ${res.status}`);
+        const { totals } = await res.json();
+
+        const rows = [
+          { label: 'Yes, Dino Therapy helped me.',                      count: totals.dino_yes },
+          { label: 'No, Maastrichtian Therapy did not help me.',         count: totals.dino_no },
+          { separator: true },
+          { label: 'I opted for Holocene Gödelian Therapy.',            count: totals.upgraded_opted },
+          { label: 'Yes, Holocene Gödelian Therapy helped me.',         count: totals.hgerp_yes },
+          { label: 'No, Holocene Gödelian Therapy did not help me.',    count: totals.hgerp_no },
+        ];
+
+        grid.innerHTML = '';
+        rows.forEach(row => {
+          if (row.separator) {
+            const div = document.createElement('div');
+            div.className = 'stat-row separator';
+            grid.appendChild(div);
+            return;
+          }
+          const div = document.createElement('div');
+          div.className = 'stat-row';
+          div.innerHTML = `<span class="stat-label">${row.label}</span><span class="stat-count">${row.count}</span>`;
+          grid.appendChild(div);
+        });
+      } catch (err) {
+        grid.innerHTML = `<p class="loading-msg">Could not load stats: ${err.message}</p>`;
+      }
+    })();
+  </script>
+</body>
+</html>

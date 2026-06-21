@@ -6,6 +6,7 @@ const { resolveComicForEmotions } = require('./lib/resolveComic');
 const { resolveXkcdForEmotions } = require('./lib/resolveXkcd');
 const { validateFeedback } = require('./lib/validateFeedback');
 const { writeFeedback } = require('./lib/store');
+const { readAllFeedback } = require('./lib/readFeedback');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -41,6 +42,23 @@ app.post('/api/feedback', async (req, res) => {
   } catch (err) {
     const status = err instanceof RangeError ? 400 : 502;
     res.status(status).json({ error: err.message });
+  }
+});
+
+app.get('/api/stats', async (req, res) => {
+  try {
+    const records = await readAllFeedback();
+    const totals = { dino_yes: 0, dino_no: 0, upgraded_opted: 0, hgerp_yes: 0, hgerp_no: 0 };
+    for (const r of records) {
+      if (r.response === 'upgrade_requested') { totals.upgraded_opted++; continue; }
+      if (r.tier === 'standard' && r.response === 'yes') { totals.dino_yes++; continue; }
+      if (r.tier === 'standard' && r.response === 'no')  { totals.dino_no++;  continue; }
+      if (r.tier === 'upgraded' && r.response === 'yes') { totals.hgerp_yes++; continue; }
+      if (r.tier === 'upgraded' && r.response === 'no')  { totals.hgerp_no++;  continue; }
+    }
+    res.json({ totals, recordCount: records.length });
+  } catch (err) {
+    res.status(502).json({ error: err.message });
   }
 });
 

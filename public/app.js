@@ -292,7 +292,8 @@
       document.querySelector('.masthead-sub').textContent = 'H.G.E.R.P. · Methodology v2.1';
       document.getElementById('siteFooter').innerHTML =
         'The Holocene Gödelian Emotional Regulation Protocol helps you identify your emotions and practice healthy emotional regulation with a curated <a href="https://xkcd.com" target="_blank" rel="noopener">xkcd</a> comic by Randall Munroe. ' +
-        'Feelings Wheel by <a href="https://feelingswheel.app/" target="_blank" rel="noopener">Geoffrey Roberts</a>.';
+        'Feelings Wheel by <a href="https://feelingswheel.app/" target="_blank" rel="noopener">Geoffrey Roberts</a>. ' +
+        '&middot; <a href="/stats.html">Protocol Outcomes</a>';
     }
     showScreen('screen-processing');
     populateProcessingPills();
@@ -333,7 +334,8 @@
     document.querySelector('.masthead-sub').textContent = 'Maastrichtian emotional regulation protocol — Methodology v1.3';
     document.getElementById('siteFooter').innerHTML =
       'The Maastrichtian emotional regulation protocol helps you identify your emotions and practice healthy emotional regulation with a selected <a href="https://www.qwantz.com" target="_blank" rel="noopener">Dinosaur Comic</a> by Ryan North. ' +
-      'Feelings Wheel by <a href="https://feelingswheel.app/" target="_blank" rel="noopener">Geoffrey Roberts</a>.';
+      'Feelings Wheel by <a href="https://feelingswheel.app/" target="_blank" rel="noopener">Geoffrey Roberts</a>. ' +
+      '&middot; <a href="/stats.html">Protocol Outcomes</a>';
     OAEWheel.updateWheelSelectionStyles(svg, isSelected);
     renderTray();
     showScreen('screen-intake');
