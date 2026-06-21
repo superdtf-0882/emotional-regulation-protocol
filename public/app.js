@@ -13,8 +13,14 @@
   layout.middles.forEach(m => { idToCoreIndex[m.id] = m.coreIndex; });
   layout.leaves.forEach(l => { idToCoreIndex[l.id] = l.coreIndex; });
 
-  /** @type {{id: string, name: string}[]} */
+  /** @type {{id: string, name: string, coreIndex: number|undefined}[]} */
   const selected = [];
+
+  // Spans from selection through standard + optional upgrade; resets on "New session"
+  let sessionId = crypto.randomUUID();
+
+  // Most recently resolved comic — needed by regulation-check feedback buttons
+  let currentResult = null; // { comic, tier, source, emotionNames }
 
   function isSelected(id) {
     return selected.some((s) => s.id === id);
@@ -88,15 +94,6 @@
     document.querySelectorAll('.screen').forEach((s) => s.classList.toggle('is-active', s.id === id));
   }
 
-  // ---------- The "seed" the server actually hashes — mirrored here only
-  // for the cosmetic reveal animation, using the identical algorithm, so
-  // what's displayed is genuinely what gets sent, not a fake mockup of it.
-  function buildSeedDisplay(names) {
-    const sorted = [...names].map((n) => n.trim().toLowerCase()).filter(Boolean).sort();
-    const dateStr = new Date().toISOString().slice(0, 10);
-    return `${sorted.join('-')}-${dateStr}`;
-  }
-
   function populateProcessingPills() {
     const container = document.getElementById('processingPills');
     container.innerHTML = '';
@@ -111,7 +108,9 @@
     });
   }
 
-  function buildColoredChars(names) {
+  // Builds a {char, color}[] array mirroring the exact seed the server hashes —
+  // emotions get their family color, separators/date/tier are neutral.
+  function buildColoredChars(names, tier) {
     const nameToCoreIndex = Object.fromEntries(selected.map(s => [s.name.toLowerCase(), s.coreIndex]));
     const sorted = [...names].map(n => n.trim().toLowerCase()).filter(Boolean).sort();
     const dateStr = new Date().toISOString().slice(0, 10);
@@ -123,12 +122,14 @@
       chars.push({ char: '-', color: null });
     });
     for (const ch of dateStr) chars.push({ char: ch, color: null });
+    const suffix = `-${tier}`;
+    for (const ch of suffix) chars.push({ char: ch, color: null });
     return chars;
   }
 
-  function animateSeedReveal(names) {
+  function animateSeedReveal(names, tier) {
     return new Promise((resolve) => {
-      const chars = buildColoredChars(names);
+      const chars = buildColoredChars(names, tier);
       const el = document.getElementById('seedReadout');
       el.innerHTML = '';
       const intervalMs = Math.max(30, Math.round(5000 / chars.length));
@@ -182,7 +183,76 @@
     screen.appendChild(msg);
   }
 
-  function showReveal(data, names) {
+  // ---------- Regulation check ----------
+  function resetRegulationCheck(tier) {
+    const ack = document.getElementById('regulationAck');
+    ack.hidden = true;
+    ack.textContent = '';
+
+    document.querySelectorAll('.regulation-button').forEach((btn) => {
+      btn.disabled = false;
+      btn.hidden = false;
+    });
+    // No further upgrade to offer once already on the upgraded tier
+    document.getElementById('upgradeButton').hidden = tier === 'upgraded';
+    document.getElementById('regulationButtons').hidden = false;
+    document.getElementById('resetButton').hidden = true;
+  }
+
+  async function postFeedback(response) {
+    if (!currentResult) return;
+    const payload = {
+      sessionId,
+      tier: currentResult.tier,
+      emotions: currentResult.emotionNames,
+      comicSource: currentResult.source,
+      comicId: currentResult.comic.id,
+      response,
+    };
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`request failed (${res.status})`);
+    } catch (err) {
+      // Feedback is supplementary — log it but don't interrupt the experience
+      console.warn('[feedback] failed to record response:', err.message);
+    }
+  }
+
+  async function onRegulationResponse(response) {
+    document.querySelectorAll('.regulation-button').forEach((btn) => { btn.disabled = true; });
+
+    const ack = document.getElementById('regulationAck');
+    ack.hidden = false;
+
+    if (response === 'upgrade_requested') {
+      ack.textContent = 'Escalating to upgraded protocol…';
+      await postFeedback(response);
+      document.getElementById('regulationButtons').hidden = true;
+      const names = currentResult.emotionNames;
+      window.setTimeout(() => runAlignment(names, 'upgraded'), 500);
+      return;
+    }
+
+    ack.textContent = response === 'yes'
+      ? 'Response recorded. Glad to hear it.'
+      : 'Response recorded. Noted for future calibration.';
+    document.getElementById('regulationButtons').hidden = true;
+    document.getElementById('resetButton').hidden = false;
+    await postFeedback(response);
+  }
+
+  document.getElementById('regulationButtons').addEventListener('click', (evt) => {
+    const btn = evt.target.closest('.regulation-button');
+    if (!btn || btn.disabled) return;
+    onRegulationResponse(btn.dataset.response);
+  });
+
+  // ---------- Reveal ----------
+  function showReveal(data, names, tier) {
     const tagsEl = document.getElementById('revealTags');
     tagsEl.innerHTML = '';
     names.forEach((n) => {
@@ -194,29 +264,40 @@
 
     const img = document.getElementById('comicImage');
     img.src = data.comic.imageUrl;
-    img.alt = data.comic.blurb || data.comic.title || `Dinosaur Comics #${data.comic.id}`;
+    img.alt = data.comic.blurb || data.comic.title || `Comic #${data.comic.id}`;
 
+    const source = tier === 'upgraded' ? 'xkcd' : 'qwantz';
+    document.getElementById('revealCaption').textContent =
+      tier === 'upgraded'
+        ? 'Upgraded ontological alignment: established.'
+        : 'Your Dino Therapy is ready.';
     document.getElementById('comicMeta').innerHTML =
       `Comic #${data.comic.id} of ${data.totalComics} on file · ` +
-      `<a href="${data.comic.pageUrl}" target="_blank" rel="noopener">view on qwantz.com</a>`;
+      `<a href="${data.comic.pageUrl}" target="_blank" rel="noopener">view on ${source}.com</a>`;
 
+    currentResult = { comic: data.comic, tier, source, emotionNames: names };
+    resetRegulationCheck(tier);
     showScreen('screen-reveal');
   }
 
-  async function runAlignment() {
+  // ---------- Alignment ----------
+  async function runAlignment(names, tier) {
     clearProcessingError();
+    document.getElementById('processingLabel').textContent =
+      tier === 'upgraded'
+        ? 'Escalating emotional resolution protocol…'
+        : 'Resolving emotional state…';
     showScreen('screen-processing');
     populateProcessingPills();
-    const names = selected.map((s) => s.name);
 
     // Fetch runs in parallel with the animation so the comic is ready when the pause ends
     const fetchPromise = fetch('/api/comic', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ emotions: names }),
+      body: JSON.stringify({ emotions: names, tier }),
     });
 
-    await animateSeedReveal(names);
+    await animateSeedReveal(names, tier);
 
     try {
       const res = await fetchPromise;
@@ -225,15 +306,20 @@
         throw new Error(body.error || `request failed (${res.status})`);
       }
       const data = await res.json();
-      showReveal(data, names);
+      showReveal(data, names, tier);
     } catch (err) {
       showProcessingError(err);
     }
   }
 
-  document.getElementById('alignButton').addEventListener('click', runAlignment);
+  document.getElementById('alignButton').addEventListener('click', () => {
+    const names = selected.map((s) => s.name);
+    runAlignment(names, 'standard');
+  });
 
   document.getElementById('resetButton').addEventListener('click', () => {
+    sessionId = crypto.randomUUID();
+    currentResult = null;
     selected.length = 0;
     OAEWheel.updateWheelSelectionStyles(svg, isSelected);
     renderTray();
