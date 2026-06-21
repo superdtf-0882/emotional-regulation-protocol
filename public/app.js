@@ -276,6 +276,13 @@
       `<a href="${data.comic.pageUrl}" target="_blank" rel="noopener">view on ${source}.com</a>`;
 
     currentResult = { comic: data.comic, tier, source, emotionNames: names };
+
+    if (tier === 'upgraded') {
+      document.title = 'Holocene Gödelian Emotional Regulation Protocol';
+      document.querySelector('.masthead-text h1').textContent = 'Holocene Gödelian Emotional Regulation Protocol';
+      document.querySelector('.masthead-sub').textContent = 'H.G.E.R.P. · Methodology v2.1';
+    }
+
     resetRegulationCheck(tier);
     showScreen('screen-reveal');
   }
@@ -321,6 +328,9 @@
     sessionId = crypto.randomUUID();
     currentResult = null;
     selected.length = 0;
+    document.title = 'Dinosaur Comics Therapy';
+    document.querySelector('.masthead-text h1').textContent = 'Dinosaur Comics Therapy';
+    document.querySelector('.masthead-sub').textContent = 'Maastrichtian emotional regulation protocol — Methodology v1.3';
     OAEWheel.updateWheelSelectionStyles(svg, isSelected);
     renderTray();
     showScreen('screen-intake');
