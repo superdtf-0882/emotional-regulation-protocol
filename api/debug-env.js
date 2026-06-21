@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
     const { put, del } = await import('@vercel/blob');
     const testPayload = JSON.stringify({ test: true, ts: new Date().toISOString() });
     const blob = await put('responses/debug-test.json', testPayload, {
-      access: 'public',
+      access: 'private',
       contentType: 'application/json',
     });
     blobWriteResult = { url: blob.url };
