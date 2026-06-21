@@ -225,24 +225,22 @@
   async function onRegulationResponse(response) {
     document.querySelectorAll('.regulation-button').forEach((btn) => { btn.disabled = true; });
 
-    const ack = document.getElementById('regulationAck');
-    ack.hidden = false;
-
     if (response === 'upgrade_requested') {
+      const ack = document.getElementById('regulationAck');
+      ack.hidden = false;
       ack.textContent = 'Escalating to upgraded protocol…';
-      await postFeedback(response);
+      postFeedback(response);
       document.getElementById('regulationButtons').hidden = true;
       const names = currentResult.emotionNames;
       window.setTimeout(() => runAlignment(names, 'upgraded'), 500);
       return;
     }
 
-    ack.textContent = response === 'yes'
-      ? 'Response recorded. Glad to hear it.'
-      : 'Response recorded. Noted for future calibration.';
-    document.getElementById('regulationButtons').hidden = true;
-    document.getElementById('resetButton').hidden = false;
-    await postFeedback(response);
+    postFeedback(response);
+    document.getElementById('responseMessage').textContent = response === 'yes'
+      ? 'Awesome! Keep feeling better!'
+      : "Awwww... we're sorry that didn't help. Wanna try again?";
+    showScreen('screen-response');
   }
 
   document.getElementById('regulationButtons').addEventListener('click', (evt) => {
@@ -324,7 +322,7 @@
     runAlignment(names, 'standard');
   });
 
-  document.getElementById('resetButton').addEventListener('click', () => {
+  function resetToIntake() {
     sessionId = crypto.randomUUID();
     currentResult = null;
     selected.length = 0;
@@ -334,7 +332,11 @@
     OAEWheel.updateWheelSelectionStyles(svg, isSelected);
     renderTray();
     showScreen('screen-intake');
-  });
+  }
+
+  document.getElementById('responseResetButton').addEventListener('click', resetToIntake);
+
+  document.getElementById('resetButton').addEventListener('click', resetToIntake);
 
   // ---------- Init ----------
   document.getElementById('timeOfDay').textContent = getTimeOfDayPhrase();
