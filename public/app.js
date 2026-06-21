@@ -275,15 +275,6 @@
 
     currentResult = { comic: data.comic, tier, source, emotionNames: names };
 
-    if (tier === 'upgraded') {
-      document.title = 'Holocene Gödelian Emotional Regulation Protocol';
-      document.querySelector('.masthead-text h1').textContent = 'Holocene Gödelian Emotional Regulation Protocol';
-      document.querySelector('.masthead-sub').textContent = 'H.G.E.R.P. · Methodology v2.1';
-      document.getElementById('siteFooter').innerHTML =
-        'The Holocene Gödelian Emotional Regulation Protocol helps you identify your emotions and practice healthy emotional regulation with a curated <a href="https://xkcd.com" target="_blank" rel="noopener">xkcd</a> comic by Randall Munroe. ' +
-        'Feelings Wheel by <a href="https://feelingswheel.app/" target="_blank" rel="noopener">Geoffrey Roberts</a>.';
-    }
-
     resetRegulationCheck(tier);
     showScreen('screen-reveal');
   }
@@ -295,6 +286,14 @@
       tier === 'upgraded'
         ? 'Escalating emotional resolution protocol…'
         : 'Resolving emotional state…';
+    if (tier === 'upgraded') {
+      document.title = 'Holocene Gödelian Emotional Regulation Protocol';
+      document.querySelector('.masthead-text h1').textContent = 'Holocene Gödelian Emotional Regulation Protocol';
+      document.querySelector('.masthead-sub').textContent = 'H.G.E.R.P. · Methodology v2.1';
+      document.getElementById('siteFooter').innerHTML =
+        'The Holocene Gödelian Emotional Regulation Protocol helps you identify your emotions and practice healthy emotional regulation with a curated <a href="https://xkcd.com" target="_blank" rel="noopener">xkcd</a> comic by Randall Munroe. ' +
+        'Feelings Wheel by <a href="https://feelingswheel.app/" target="_blank" rel="noopener">Geoffrey Roberts</a>.';
+    }
     showScreen('screen-processing');
     populateProcessingPills();
 
