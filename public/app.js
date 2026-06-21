@@ -26,18 +26,6 @@
     return selected.some((s) => s.id === id);
   }
 
-  // ---------- Time-of-day greeting, fixed to GMT-7 regardless of visitor's locale ----------
-  function getTimeOfDayPhrase() {
-    const now = new Date();
-    const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
-    const gmtMinus7 = new Date(utcMs - 7 * 60 * 60 * 1000);
-    const hour = gmtMinus7.getUTCHours();
-    if (hour >= 5 && hour < 12) return 'this morning';
-    if (hour >= 12 && hour < 17) return 'this afternoon';
-    if (hour >= 17 && hour < 21) return 'this evening';
-    return 'today';
-  }
-
   // ---------- Selection tray ----------
   function renderTray() {
     document.getElementById('selectedCount').textContent = String(selected.length);
@@ -346,6 +334,5 @@
   document.getElementById('resetButton').addEventListener('click', resetToIntake);
 
   // ---------- Init ----------
-  document.getElementById('timeOfDay').textContent = getTimeOfDayPhrase();
   renderTray();
 })();
