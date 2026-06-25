@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — Dinosaur Comics Therapy</title>
+  <meta name="description" content="About the Maastrichtian Emotional Regulations Protocol (a.k.a. the Holocene G&ouml;delian Emotional Regulation Protocol) — how it works, and the engineering behind it." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+
+    <header class="masthead">
+      <div class="masthead-glyph" aria-hidden="true">⬡</div>
+      <div class="masthead-text">
+        <h1>About the Protocol</h1>
+        <p class="masthead-sub">Maastrichtian emotional regulation protocol &mdash; Methodology v1.3</p>
+      </div>
+    </header>
+
+    <main class="about-content">
+
+      <p class="about-lede">
+        A Feelings Wheel that performs the full ritual of emotional precision, then
+        deterministically hands you a curated comic. Select up to three emotions,
+        let the protocol do its work, and receive your comic. Same emotions + same
+        day + same tier = same comic, every time.
+      </p>
+
+      <p class="about-aka">
+        a.k.a. the <strong>Maastrichtian Emotional Regulations Protocol (v1.3)</strong>
+        &mdash; or the upgraded <strong>Holocene G&ouml;delian Emotional Regulation Protocol (HGERP v2.1)</strong>
+      </p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li>
+          <strong>Frontend</strong> &mdash; a plain HTML/CSS/JS sunburst wheel with three
+          selectable rings. No build step, no framework. Selecting 1&ndash;3 emotions and
+          clicking &ldquo;Get Dino Therapy&rdquo; sends them to the comic API.
+        </li>
+        <li>
+          <strong>Resolution logic</strong> &mdash; alphabetizes the chosen emotions,
+          appends today&rsquo;s date and the active tier, and hashes the string (djb2).
+          Including the tier in the seed means a given day + emotion set resolves
+          to a fixed comic <em>per tier</em> &mdash; the same input always lands on the
+          same Dinosaur Comics strip in standard mode, and the same xkcd strip in
+          upgraded mode.
+        </li>
+        <li>
+          <strong>Two comic sources, selectable as a tier:</strong>
+          <ul>
+            <li><strong>Standard</strong> &mdash; Dinosaur Comics. Looks up the current
+              archive size live from qwantz.com&rsquo;s homepage each time (cached 1 hour),
+              so it never goes stale.</li>
+            <li><strong>Upgraded</strong> &mdash; xkcd, via its official JSON endpoint.
+              Handles the one real gap in the archive (comic #404 intentionally 404s)
+              by walking forward deterministically until it finds a real comic.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Backend</strong> &mdash; the same resolution logic is used by both a
+          local Express server and a Vercel serverless function, so local dev and
+          production behave identically.
+        </li>
+      </ol>
+
+      <h2>Feedback &amp; outcomes tracking</h2>
+      <p>
+        After receiving a comic, you can respond whether it helped, or opt to try
+        the upgraded tier. Each response is validated, then persisted independently
+        (Vercel Blob in production &mdash; one blob per response, so concurrent
+        submissions never race). Aggregated totals are surfaced on the
+        <a href="/stats.html">Protocol Outcomes</a> page.
+      </p>
+
+      <h2>If the comic sources ever change</h2>
+      <p>
+        The Dinosaur Comics resolver reads qwantz.com&rsquo;s homepage markup directly
+        (with a documented fallback path), since qwantz has no official API. The
+        xkcd resolver uses xkcd&rsquo;s own JSON API, which is far more stable.
+      </p>
+
+      <h2>Attributions</h2>
+      <ul>
+        <li>Dinosaur Comics by <a href="https://www.qwantz.com" target="_blank" rel="noopener">Ryan North</a></li>
+        <li>xkcd by <a href="https://xkcd.com" target="_blank" rel="noopener">Randall Munroe</a></li>
+        <li>Feelings Wheel by <a href="https://feelingswheel.app/" target="_blank" rel="noopener">Geoffrey Roberts</a></li>
+      </ul>
+
+      <p class="about-readme-link">
+        Full technical README (project structure, local setup, deployment notes):
+        <a href="https://github.com/superdtf-0882/emotional-regulation-protocol#readme" target="_blank" rel="noopener">github.com/superdtf-0882/emotional-regulation-protocol</a>
+      </p>
+
+    </main>
+
+    <footer class="footnote">
+      <a href="/">&larr; Back to the wheel</a>
+      &middot; <a href="/stats.html">Protocol Outcomes</a>
+    </footer>
+
+  </div>
+</body>
+</html>
