@@ -50,6 +50,31 @@ After receiving a comic, the user can respond whether it helped
   upgraded yes/no, upgrade-requested count), surfaced at `/stats.html`
   ("Protocol Outcomes," linked from the site footer).
 
+## Sharing a result
+
+After a comic is revealed, a 🔗 button next to "view on qwantz.com" (or
+xkcd.com) lets the user copy a shareable link.
+
+- `POST /api/share` writes a small JSON payload (`emotions`, `tier`,
+  `comicId`, `source`) to Vercel Blob under a random 6-character base62
+  token and returns that token. For standard-tier shares, it also
+  best-effort pre-computes the matching upgraded (xkcd) comic so
+  recipients can try Upgraded Therapy without date drift breaking the
+  match; if that pre-computation fails, the share is still created, just
+  without the upgrade option for that link.
+- The resulting URL is `https://.../share/TOKEN`. A `vercel.json` rewrite
+  maps `/share/:token` to `public/share.html`, which fetches the payload
+  via `GET /api/share/:token` (`api/share/[token].js`) and replays the
+  exact same comic by ID — bypassing the date-sensitive hash via the
+  `comicId` param now accepted by `POST /api/comic`.
+- Share tokens are opaque; no emotion names ever appear in the URL.
+- `public/share.html` / `public/share.js` are intentionally standalone —
+  they don't load the wheel, since recipients only ever view a result.
+- All asset references in `share.html` (`/styles.css`, `/share.js`) must
+  stay absolute paths. Because the Vercel rewrite preserves the browser
+  URL at `/share/TOKEN`, a relative path resolves against `/share/`
+  instead of root and silently 404s.
+
 ## Local development
 
 ```bash
@@ -68,9 +93,17 @@ The repo is connected to Vercel for auto-deploys on push to `main`.
 If setting up from scratch:
 - Connect the repo at vercel.com/new
 - Under **Settings → General → Framework Preset**, set to **Other**
-- Connect a Vercel Blob store to the project for feedback persistence to
-  work in production (Storage tab → Create Database → Blob). No other
-  environment variables are required.
+- Connect a Vercel Blob store to the project (Storage tab → Create
+  Database → Blob), with **Public** access — `@vercel/blob` 0.27.x only
+  supports `access: 'public'` in `put()`, so a private store will reject
+  every write with "access must be 'public'".
+- Connecting a store does **not** automatically inject
+  `BLOB_READ_WRITE_TOKEN` on this account/plan — only `BLOB_STORE_ID` and
+  `BLOB_WEBHOOK_PUBLIC_KEY` show up by default, and the older
+  `@vercel/blob` version in use here doesn't know how to authenticate
+  with `BLOB_STORE_ID` alone. After creating the store, open its
+  **`.env.local`** tab, copy the `BLOB_READ_WRITE_TOKEN` value, and add it
+  manually under **Settings → Environment Variables**, then redeploy.
 
 ## If qwantz.com or xkcd.com ever change their markup
 
@@ -88,10 +121,13 @@ If setting up from scratch:
 ```
 .
 ├── api/
-│   ├── comic.js              # POST /api/comic — resolves a comic for given emotions + tier
+│   ├── comic.js              # POST /api/comic — resolves a comic for given emotions + tier, or by comicId
 │   ├── feedback.js           # POST /api/feedback — records a response
-│   └── stats.js              # GET /api/stats — aggregated feedback totals
-├── server.js                 # Express server (local dev only)
+│   ├── stats.js              # GET /api/stats — aggregated feedback totals
+│   ├── share.js              # POST /api/share — creates a share token
+│   └── share/
+│       └── [token].js        # GET /api/share/:token — retrieves a share payload
+├── server.js                 # Express server (local dev only) — mirrors all api/ routes
 ├── lib/
 │   ├── seed.js                # shared deterministic hash/seed logic
 │   ├── resolveComic.js        # standard tier — Dinosaur Comics
@@ -102,11 +138,14 @@ If setting up from scratch:
 ├── public/
 │   ├── index.html
 │   ├── stats.html             # "Protocol Outcomes" page
+│   ├── about.html             # "About the Emotional Regulation Protocol" page
+│   ├── share.html             # recipient view for a shared link (served at /share/:token)
+│   ├── share.js               # standalone script for share.html — no wheel
 │   ├── styles.css
 │   ├── emotions-data.js       # 3-tier emotion taxonomy
 │   ├── wheel.js               # SVG sunburst layout + rendering
 │   └── app.js                 # state, API calls, animations
-└── vercel.json
+└── vercel.json                # outputDirectory + rewrite: /share/:token → /share.html
 ```
 
 ## Attributions
