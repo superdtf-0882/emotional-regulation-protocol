@@ -237,6 +237,42 @@
     onRegulationResponse(btn.dataset.response);
   });
 
+  // ---------- Share ----------
+  async function createShare() {
+    const btn = document.getElementById('shareBtn');
+    if (!btn || !currentResult) return;
+    btn.disabled = true;
+    btn.textContent = '…';
+    try {
+      const res = await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          emotions: currentResult.emotionNames,
+          tier: currentResult.tier,
+          comicId: currentResult.comic.id,
+          source: currentResult.source,
+        }),
+      });
+      if (!res.ok) throw new Error('share creation failed');
+      const { token } = await res.json();
+      const url = `${window.location.origin}/share/${token}`;
+      await navigator.clipboard.writeText(url);
+      btn.textContent = '✓';
+      btn.title = 'Link copied!';
+      window.setTimeout(() => {
+        btn.textContent = '🔗';
+        btn.title = 'Copy share link';
+        btn.disabled = false;
+      }, 2000);
+    } catch (err) {
+      console.warn('[share]', err.message);
+      btn.textContent = '🔗';
+      btn.title = 'Copy share link';
+      btn.disabled = false;
+    }
+  }
+
   // ---------- Reveal ----------
   function showReveal(data, names, tier) {
     const tagsEl = document.getElementById('revealTags');
@@ -259,7 +295,9 @@
         : 'Your Dino Therapy is ready.';
     document.getElementById('comicMeta').innerHTML =
       `Comic #${data.comic.id} of ${data.totalComics} on file · ` +
-      `<a href="${data.comic.pageUrl}" target="_blank" rel="noopener">view on ${source}.com</a>`;
+      `<a href="${data.comic.pageUrl}" target="_blank" rel="noopener">view on ${source}.com</a>` +
+      ` · <button class="share-btn" id="shareBtn" aria-label="Copy share link" title="Copy share link">🔗</button>`;
+    document.getElementById('shareBtn').addEventListener('click', createShare);
 
     currentResult = { comic: data.comic, tier, source, emotionNames: names };
 

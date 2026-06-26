@@ -1,4 +1,7 @@
 {
   "outputDirectory": "public",
-  "installCommand": "npm install --omit=dev"
+  "installCommand": "npm install --omit=dev",
+  "rewrites": [
+    { "source": "/share/:token", "destination": "/share.html" }
+  ]
 }

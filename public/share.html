@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dinosaur Comics Therapy — Shared Session</title>
+  <meta name="description" content="A curated comic selected by the Maastrichtian emotional regulation protocol." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+
+    <header class="masthead" id="siteHeader">
+      <div class="masthead-glyph" aria-hidden="true">⬡</div>
+      <div class="masthead-text">
+        <h1 id="siteTitle">Dinosaur Comics Therapy</h1>
+        <p class="masthead-sub" id="siteSub">Maastrichtian emotional regulation protocol &mdash; Methodology v1.3</p>
+      </div>
+    </header>
+
+    <main id="screens">
+
+      <section id="screen-loading" class="screen is-active">
+        <p class="processing-label">Loading shared session&hellip;</p>
+      </section>
+
+      <section id="screen-processing" class="screen">
+        <div class="processing-pills" id="processingPills"></div>
+        <p class="processing-label" id="processingLabel">Resolving emotional state&hellip;</p>
+        <pre class="seed-readout" id="seedReadout" aria-live="polite"></pre>
+      </section>
+
+      <section id="screen-response" class="screen">
+        <p class="response-message" id="responseMessage"></p>
+        <button id="responseResetButton" class="reset-button" type="button">New Session</button>
+      </section>
+
+      <section id="screen-reveal" class="screen">
+        <div class="reveal-tags" id="revealTags"></div>
+        <div class="comic-frame">
+          <img id="comicImage" alt="" />
+        </div>
+        <p class="reveal-caption" id="revealCaption"></p>
+        <p class="comic-meta" id="comicMeta"></p>
+
+        <div class="regulation-check" id="regulationCheck">
+          <p class="regulation-question">Do you feel more emotionally regulated?</p>
+          <div class="regulation-buttons" id="regulationButtons">
+            <button type="button" class="regulation-button" data-response="yes">Yes</button>
+            <button type="button" class="regulation-button" data-response="no">No</button>
+            <button type="button" class="regulation-button regulation-button-upgrade" id="upgradeButton" data-response="upgrade_requested">Try Upgraded Therapy</button>
+          </div>
+          <p class="regulation-ack" id="regulationAck" hidden></p>
+        </div>
+
+        <button id="resetButton" class="reset-button" type="button" hidden>New session</button>
+      </section>
+
+      <section id="screen-error" class="screen">
+        <p class="response-message" id="errorMessage">This share link could not be found.</p>
+        <a href="/" class="reset-button" style="display:inline-block;text-decoration:none;margin-top:26px;">Try it yourself</a>
+      </section>
+
+    </main>
+
+    <footer class="footnote" id="siteFooter">
+      The Maastrichtian emotional regulation protocol helps you identify your emotions and practice healthy emotional regulation with a selected <a href="https://www.qwantz.com" target="_blank" rel="noopener">Dinosaur Comic</a> by Ryan North.
+      Feelings Wheel by <a href="https://feelingswheel.app/" target="_blank" rel="noopener">Geoffrey Roberts</a>.
+      &middot; <a href="/stats.html">Protocol Outcomes</a>
+      &middot; <a href="/about.html">About the Emotional Regulation Protocol</a>
+    </footer>
+
+  </div>
+
+  <script src="share.js"></script>
+</body>
+</html>

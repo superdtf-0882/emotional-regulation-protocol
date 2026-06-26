@@ -15,7 +15,25 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { emotions, tier } = req.body || {};
+    const { emotions, tier, comicId } = req.body || {};
+
+    // Direct fetch by ID — used by share.html to replay the exact same comic
+    // the sharer saw, bypassing the date-sensitive hash entirely.
+    if (comicId !== undefined) {
+      if (!Number.isInteger(comicId) || comicId < 1) {
+        return res.status(400).json({ error: 'comicId must be a positive integer.' });
+      }
+      const resolvedTier = tier === 'upgraded' ? 'upgraded' : 'standard';
+      let comic, totalComics;
+      if (resolvedTier === 'upgraded') {
+        const { fetchXkcdById, fetchLatestXkcdNum } = require('../lib/resolveXkcd');
+        [comic, totalComics] = await Promise.all([fetchXkcdById(comicId), fetchLatestXkcdNum()]);
+      } else {
+        const { fetchComicById, fetchLatestComicId } = require('../lib/resolveComic');
+        [comic, totalComics] = await Promise.all([fetchComicById(comicId), fetchLatestComicId()]);
+      }
+      return res.status(200).json({ tier: resolvedTier, comic, totalComics, shared: true });
+    }
 
     if (tier !== undefined && tier !== 'standard' && tier !== 'upgraded') {
       return res.status(400).json({ error: 'tier must be "standard" or "upgraded".' });

@@ -496,3 +496,24 @@ html, body {
   padding-top: 16px;
   border-top: 1px solid var(--paper-deep);
 }
+
+/* ---------- Share button ---------- */
+.share-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 0 2px;
+  color: var(--ink-soft);
+  vertical-align: middle;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.15s ease, transform 0.1s ease;
+}
+.share-btn:hover:not(:disabled) {
+  color: var(--accent-clinical);
+  transform: scale(1.15);
+}
+.share-btn:disabled { opacity: 0.5; cursor: default; }
+.share-btn:focus-visible { outline: 2px solid var(--accent-clinical); outline-offset: 2px; border-radius: 2px; }
